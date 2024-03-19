@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 var cors = require('cors')
+const e = require('express')
 const port = 3000
 
 app.use(express.json()) //json
@@ -9,7 +10,7 @@ app.use(express.text()) //text
 app.use(express.urlencoded({ extended: true })) //form data or url-encoded
 app.use(cors())
 
-const messages = [{"message": '1'},{"message": '2'}];
+let messages = [];
 
 app.get('/message', (req, res) => {
   res.json({ msg: 'Hello World from api!'})
@@ -17,7 +18,7 @@ app.get('/message', (req, res) => {
 
 app.post('/message', (req, res) => {
   if(req.body) {
-    messages.push(req.body)
+    messages.push({...req.body, idx: messages.length + 1})
   }
   res.status(201).json({ msg: 'Message created!'});
 })
@@ -36,6 +37,22 @@ app.delete('/message/:text', (req, res) => {
   if(index !== -1) {
     messages.splice(index, 1);
     res.json({msg: 'Message deleted!'});
+  } else {
+    res.status(404).json({msg: 'Message not found!'});
+  }
+  
+})
+
+app.put('/message/:idx', (req, res) => {
+  const idx = req.params.idx;
+  const updatedMessage = req.body.message;
+  const messageToModif = messages.find(m => m.idx == idx);
+  
+  console.log(messageToModif)
+
+  if(messageToModif){
+    messageToModif.message = updatedMessage;
+    res.json({msg: 'Message updated!'});
   } else {
     res.status(404).json({msg: 'Message not found!'});
   }
